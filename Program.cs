@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 #nullable enable
 namespace CSharp8Intro
@@ -10,7 +10,7 @@ namespace CSharp8Intro
     {
         static void Main(string[] args)
         {
-            NullableTypes();
+            //NullableTypes();
 
             //UsingStatement();
 
@@ -18,7 +18,41 @@ namespace CSharp8Intro
 
             //AsyncEnumerable().Wait();
 
+            //Task.Run(() => AsyncExample()).Wait();
+
             Console.ReadKey();
+        }
+
+        private static async Task AsyncExample()
+        {
+            // Below two approaches have different runtime.
+            // Task.Run() places the Task on TaskScheduler mostly parallelizing the synchronous overhead (depending on the size of the Thread Pool).
+            var tasks = new List<Task>();
+            var start = DateTime.Now;
+            for (int i = 0; i < 10; i++)
+            {
+                tasks.Add(DoMeaningfulWork());
+            }
+
+            await Task.WhenAll(tasks);
+            Console.WriteLine($"Delta Approach 1: {(DateTime.Now - start).TotalSeconds} seconds");
+
+            // Approach 2:
+            tasks = new List<Task>();
+            start = DateTime.Now;
+            for (int i = 0; i < 10; i++)
+            {
+                tasks.Add(Task.Run(() => DoMeaningfulWork()));
+            }
+
+            await Task.WhenAll(tasks);
+            Console.WriteLine($"Delta Approach 2: {(DateTime.Now - start).TotalSeconds} seconds");
+        }
+
+        private static async Task DoMeaningfulWork()
+        {
+            Thread.Sleep(1000);
+            await Task.Delay(1000);
         }
 
         private static async Task AsyncEnumerable()
@@ -64,6 +98,12 @@ namespace CSharp8Intro
 
         private static void NullableTypes()
         {
+            // Types of nullability:
+            //object? o1 = null; // Reference Type
+            //object o2 = new object(); // Reference Type
+            //DateTime dt1 = DateTime.Now; // Value Type
+            //DateTime? dt2 = null; // Nullable value Type -> Nullable<DateTime> Reference Type
+
             var article = new NewsArticle()
             {
                 //Content = null,
@@ -73,11 +113,11 @@ namespace CSharp8Intro
             Console.WriteLine(article.Content);
 
             // Not null - in this case :)
-            //Console.WriteLine(article.TitlePicture.ToString());
+            Console.WriteLine(article.TitlePicture.ToString());
 
             // Null - in this case :) - gives compiler warning
             //article.TitlePicture = null;
-            //Console.WriteLine(article.TitlePicture.ToString());
+            //Console.WriteLine(article.TitlePicture!.ToString());
 
             // Null but no compiler warning
             //article.TitlePicture = new Uri("http://bing.com/image.jpg");
@@ -85,7 +125,7 @@ namespace CSharp8Intro
             //Console.WriteLine(article.TitlePicture.ToString());
 
             // Highlighting intent throws
-            //var property = typeof(NewsArticle).GetProperty("abc")!.GetGetMethod();
+            //var property = typeof(NewsArticle).GetProperty("abc").GetGetMethod();
 
             // MyList may be null, each element is not allowed to be null
             //List<string>? myList = new List<string>();

@@ -7,14 +7,14 @@ namespace CSharp8Intro
 {
     public class NewsArticle
     {
-        //public NewsArticle()
-        //{
-        //    Content = "Abc";
-        //}
+        public NewsArticle()
+        {
+            Content = "Abc";
+        }
 
         //public NewsArticle(string foo) { }
 
-        public string Content { get; set; } = default!;
+        public string Content { get; set; }
 
         public Uri? TitlePicture { get; set; }
     }
